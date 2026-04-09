@@ -13,7 +13,15 @@ import {
   Info
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { cn } from './lib/utils';
+
+// --- Yardımcı Fonksiyonlar (Dış dosya hatasını engellemek için buraya taşındı) ---
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+// ----------------------------------------------------------------------------
 
 // Types
 interface UpscaledImage {
@@ -49,7 +57,6 @@ export default function App() {
     const newFiles = Array.from(selected).slice(0, MAX_FILES);
     setFiles(newFiles);
     
-    // Initialize results with pending state
     const initialResults: UpscaledImage[] = newFiles.map(file => ({
       id: Math.random().toString(36).substring(7),
       name: file.name.replace(/\.[^.]+$/, '') + `_${scale}x.png`,
@@ -76,7 +83,6 @@ export default function App() {
       let originalHeight = 0;
 
       if (useAI) {
-        // Step 1: AI 4x Upscale
         const arrayBuffer = await file.arrayBuffer();
         const response = await fetch(hfEndpoint, {
           method: 'POST',
@@ -107,7 +113,6 @@ export default function App() {
           finalWidth = aiImg.width;
           finalHeight = aiImg.height;
         } else {
-          // Step 2: If scale is 8x, use Pica to double the AI output
           const srcCanvas = document.createElement('canvas');
           srcCanvas.width = aiImg.width;
           srcCanvas.height = aiImg.height;
@@ -131,7 +136,6 @@ export default function App() {
           finalHeight = dstCanvas.height;
         }
       } else {
-        // Pure Pica Upscale
         const img = await new Promise<HTMLImageElement>((resolve, reject) => {
           const image = new Image();
           image.onload = () => resolve(image);
@@ -159,7 +163,6 @@ export default function App() {
           unsharpThreshold: 1,
         });
 
-        // Maximize clarity with post-processing
         const ctx = dstCanvas.getContext('2d');
         if (ctx) {
           ctx.filter = `contrast(1.1) saturate(1.05) brightness(1.02)`;
@@ -203,12 +206,9 @@ export default function App() {
   const processAll = async () => {
     if (!files.length) return;
     setProcessing(true);
-    
-    // Process sequentially to avoid overwhelming the API/Browser
     for (let i = 0; i < files.length; i++) {
       await upscaleImage(files[i], results[i].id);
     }
-    
     setProcessing(false);
   };
 
@@ -231,7 +231,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-[#1A1A1A] font-sans selection:bg-black selection:text-white">
-      {/* Header */}
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -278,7 +277,6 @@ export default function App() {
       </header>
 
       <main className="max-w-7xl mx-auto p-6 space-y-8">
-        {/* Settings Panel */}
         <AnimatePresence>
           {showSettings && (
             <motion.div 
@@ -392,7 +390,6 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        {/* Upload Area */}
         {results.length === 0 ? (
           <motion.div 
             initial={{ y: 20, opacity: 0 }}
@@ -433,7 +430,6 @@ export default function App() {
           </motion.div>
         ) : (
           <div className="space-y-6">
-            {/* Action Bar */}
             <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
               <div className="flex items-center gap-4">
                 <div className="px-4 py-2 bg-gray-100 rounded-xl text-sm font-bold">
@@ -468,7 +464,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* Results Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               <AnimatePresence mode="popLayout">
                 {results.map((result, index) => (
@@ -491,7 +486,6 @@ export default function App() {
                         )}
                       />
                       
-                      {/* Status Overlay */}
                       <div className="absolute inset-0 flex items-center justify-center">
                         {result.status === 'processing' && (
                           <div className="bg-white/90 p-4 rounded-2xl shadow-xl flex flex-col items-center gap-3">
@@ -512,7 +506,6 @@ export default function App() {
                         )}
                       </div>
 
-                      {/* Dimensions Badge */}
                       {result.status === 'completed' && (
                         <div className="absolute bottom-3 left-3 bg-black/80 backdrop-blur-md text-white px-2 py-1 rounded-lg text-[10px] font-mono">
                           {result.width} × {result.height}
@@ -560,7 +553,6 @@ export default function App() {
         )}
       </main>
 
-      {/* Footer Info */}
       <footer className="max-w-7xl mx-auto px-6 py-12 border-t border-gray-100 mt-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="space-y-3">
