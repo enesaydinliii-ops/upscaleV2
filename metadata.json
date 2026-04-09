@@ -1,0 +1,5 @@
+{
+  "name": "4X Batch Image Upscaler",
+  "description": "Professional 4x image upscaling tool using AI (Hugging Face) and high-quality Pica resizing. Supports batch processing and ZIP downloads.",
+  "requestFramePermissions": []
+}
